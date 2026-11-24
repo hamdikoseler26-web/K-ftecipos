@@ -21,13 +21,21 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: APK oluştur
+      - name: ZIP dosyasını aç ve APK oluştur
         run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          sudo apt-get update
+          sudo apt-get install -y unzip
+          ZIP_FILE=$(find . -maxdepth 1 -iname '*.zip' | head -n 1)
+          test -n "$ZIP_FILE"
+          unzip -q "$ZIP_FILE" -d project
+          GRADLEW=$(find project -name gradlew -type f | head -n 1)
+          test -n "$GRADLEW"
+          PROJECT_DIR=$(dirname "$GRADLEW")
+          chmod +x "$GRADLEW"
+          "$GRADLEW" -p "$PROJECT_DIR" assembleDebug
 
-      - name: APK dosyasını kaydet
+      - name: APK dosyasını hazırla
         uses: actions/upload-artifact@v4
         with:
           name: KofteciPOS-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: project/**/app/build/outputs/apk/debug/app-debug.apk
