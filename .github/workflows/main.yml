@@ -21,21 +21,32 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: ZIP dosyasını aç ve APK oluştur
+      - name: ZIP dosyasini ac
         run: |
-          sudo apt-get update
-          sudo apt-get install -y unzip
-          
-          unzip -q "$ZIP_FILE" -d project
-          GRADLEW=$(find project -name gradlew -type f | head -n 1)
-          test -n "$GRADLEW"
+          if [ ! -f "KofteciPOS_Android_Proje.zip" ]; then
+            echo "ZIP dosyasi bulunamadi"
+            ls -la
+            exit 1
+          fi
+          mkdir project
+          unzip -q KofteciPOS_Android_Proje.zip -d project
+
+      - name: APK olustur
+        run: |
+          GRADLEW=$(find project -type f -name gradlew | head -n 1)
+          if [ -z "$GRADLEW" ]; then
+            echo "Gradle dosyasi bulunamadi"
+            exit 1
+          fi
           PROJECT_DIR=$(dirname "$GRADLEW")
-          chmod +x "$GRADLEW"
-          "$GRADLEW" -p "$PROJECT_DIR" assembleDebug
-          ZIP_FILE="./KofteciPOS_Android_Proje.zip"ls -l "$ZIP_FILE"
-                          ls -l "$ZIP_FILE"
-                 - name: APK dosyasını hazırla
-              uses: actions/upload-artifact@v4
-              with:
+          cd "$PROJECT_DIR"
+          chmod +x gradlew
+          ./gradlew assembleDebug
+          mkdir -p "$GITHUB_WORKSPACE/output"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/output/KofteciPOS.apk"
+
+      - name: APK dosyasini indirilebilir yap
+        uses: actions/upload-artifact@v4
+        with:
           name: KofteciPOS-APK
-          path: project/**/app/build/outputs/apk/debug/app-debug.apk
+          path: output/KofteciPOS.apk
