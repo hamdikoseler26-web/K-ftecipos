@@ -32,8 +32,9 @@ jobs:
           PROJECT_DIR=$(dirname "$GRADLEW")
           chmod +x "$GRADLEW"
           "$GRADLEW" -p "$PROJECT_DIR" assembleDebug
-           ZIP_FILE=$(find . -type f -iname '*.zip' | head -n 1)
-      - name: APK dosyasını hazırla
+          ZIP_FILE="./KofteciPOS_Android_Proje.zip"
+                          ls -l "$ZIP_FILE"
+                 - name: APK dosyasını hazırla
         uses: actions/upload-artifact@v4
         with:
           name: KofteciPOS-APK
