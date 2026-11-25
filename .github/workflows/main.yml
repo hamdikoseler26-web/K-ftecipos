@@ -22,17 +22,18 @@ jobs:
         run: |
           mkdir project
           unzip KofteciPOS_Android_Proje.zip -d project
-          find project -maxdepth 4 -type f
+          ls -la project/KofteciPOS_Android
 
       - name: Gradle kur ve APK olustur
         run: |
           sudo apt-get update
           sudo apt-get install -y gradle
-          cd project
+          cd project/KofteciPOS_Android
           gradle assembleDebug
 
       - name: APK dosyasini yukle
         uses: actions/upload-artifact@v4
         with:
           name: KofteciPOS-APK
-          path: project/app/build/outputs/apk/debug/*.apk
+          path: project/KofteciPOS_Android/app/build/outputs/apk/debug/*.apk
+
