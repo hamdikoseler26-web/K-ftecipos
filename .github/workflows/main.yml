@@ -3,50 +3,36 @@ name: Kofteci POS APK
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Projeyi indir
+      - name: Depoyu indir
         uses: actions/checkout@v4
 
       - name: Java 17 kur
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: 17
 
       - name: ZIP dosyasini ac
         run: |
-          if [ ! -f "KofteciPOS_Android_Proje.zip" ]; then
-            echo "ZIP dosyasi bulunamadi"
-            ls -la
-            exit 1
-          fi
           mkdir project
-          unzip -q KofteciPOS_Android_Proje.zip -d project
+          unzip KofteciPOS_Android_Proje.zip -d project
+          find project -maxdepth 4 -type f
 
-      - name: APK olustur
+      - name: Gradle kur ve APK olustur
         run: |
-          GRADLEW=$(find project -type f -name gradlew | head -n 1)
-          if [ -z "$GRADLEW" ]; then
-            echo "Gradle dosyasi bulunamadi"
-            exit 1
-          fi
-          PROJECT_DIR=$(dirname "$GRADLEW")
-          cd "$PROJECT_DIR"
-          chmod +x gradlew
-          ./gradlew assembleDebug
-          mkdir -p "$GITHUB_WORKSPACE/output"
-          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/output/KofteciPOS.apk"
+          sudo apt-get update
+          sudo apt-get install -y gradle
+          cd project
+          gradle assembleDebug
 
-      - name: APK dosyasini indirilebilir yap
+      - name: APK dosyasini yukle
         uses: actions/upload-artifact@v4
         with:
           name: KofteciPOS-APK
-          path: output/KofteciPOS.apk
+          path: project/app/build/outputs/apk/debug/*.apk
